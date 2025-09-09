@@ -1,26 +1,25 @@
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from transformers import pipeline
+import requests
 import os
 
 app = FastAPI()
 
-# Allow frontend domains (like Hugging Face)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Change this to only your domain in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+HF_TOKEN = os.getenv("HF_Tokenn")  # Set this in Render Dashboard
 
-# Load your model (you can use Mistral, GPT2, etc.)
-pipe = pipeline("text-generation", model="mistralai/Mistral-7B-Instruct-v0.1")
+API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 @app.post("/chat")
 async def chat(request: Request):
     data = await request.json()
-    user_input = data.get("message", "")
+    prompt = data.get("prompt", "")
     
-    result = pipe(user_input, max_new_tokens=100, do_sample=True)
-    return {"response": result[0]['generated_text']}
+    response = requests.post(API_URL, headers=headers, json={
+        "inputs": prompt
+    })
+
+    if response.status_code != 200:
+        return {"error": "Model API failed", "details": response.text}
+
+    result = response.json()
+    return {"response": result}
