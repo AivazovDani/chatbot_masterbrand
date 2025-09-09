@@ -4,7 +4,7 @@ import os
 
 app = FastAPI()
 
-HF_TOKEN = os.getenv("HF_Tokenn")  # Set this in Render Dashboard
+HF_TOKEN = os.getenv("chatbot")  # Set this in Render Dashboard
 
 API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
